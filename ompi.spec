@@ -52,7 +52,7 @@ make %{?_smp_mflags} V=1
 
 %files
 %{_libdir}/*.so.*
-%{_bindir}/
+%{_bindir}/*
 %{_datadir}/openmpi/
 %{_sysconfdir}/*
 %{_mandir}/man1/*
