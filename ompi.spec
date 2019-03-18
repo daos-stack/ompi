@@ -72,7 +72,8 @@ find %{?buildroot}%{_libdir} -name *.la -print0 | xargs -r0 rm -f
 * Mon Mar 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-2
 - Obsoletes openmpi
 - Don't package libtool .la files
-- Include %{_libdir}/openmpi in the main package
+- Include %{_libdir}/openmpi/ in the main package
+- Only include the %{_libdir}/pkgconfig/* files in the devel package
 
 * Wed Mar 13 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-1
 - initial package
