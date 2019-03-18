@@ -1,6 +1,6 @@
 Name:		ompi
 Version:	3.0.0rc4
-Release:	2%{?dist}
+Release:	3%{?dist}
 
 Summary:	OMPI
 
@@ -10,7 +10,7 @@ URL:		http://ompi-hpc.github.io/documentation/
 Source0:        https://www.github.com/open-mpi/%{name}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires: hwloc-devel
-BuildRequires: pmix-devel
+BuildRequires: pmix-devel >= 2.1.1
 BuildRequires: libevent-devel
 BuildRequires: perl-Data-Dumper
 BuildRequires: flex
@@ -69,6 +69,9 @@ find %{?buildroot}%{_libdir} -name *.la -print0 | xargs -r0 rm -f
 %{_mandir}/man7/*
 
 %changelog
+* Mon Mar 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-3
+- Add a required verison of >= 2.1.1 for pmix-devel to make sure
+  to use our build which is newer than EPEL
 * Mon Mar 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-2
 - Obsoletes openmpi
 - Don't package libtool .la files
