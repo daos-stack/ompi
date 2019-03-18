@@ -32,12 +32,12 @@ RUN echo "config_opts['use_nspawn'] = False" >> /etc/mock/site-defaults.cfg
 RUN echo -e "config_opts['yum.conf'] += \"\"\"\n\
 [openpa]\n\
 name=openpa\n\
-baseurl=https://build.hpdd.intel.com/daos-stack/job/openpa/job/master/lastSuccessfulBuild/artifact/artifacts/\n\
+baseurl=https://build.hpdd.intel.com/job/daos-stack/job/openpa/job/master/lastSuccessfulBuild/artifact/artifacts/\n\
 enabled=1\n\
 gpgcheck = False\n\
 \n\
 [libfabric]\n\
 name=libfabric\n\
-baseurl=https://build.hpdd.intel.com/daos-stack/job/libfabric/job/master/lastSuccessfulBuild/artifact/artifacts/\n\
+baseurl=https://build.hpdd.intel.com/job/daos-stack/job/libfabric/job/master/lastSuccessfulBuild/artifact/artifacts/\n\
 enabled=1\n\
 gpgcheck = False\n\"\"\"" >> /etc/mock/default.cfg
