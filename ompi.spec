@@ -1,6 +1,6 @@
 Name:		ompi
 Version:	3.0.0rc4
-Release:	1%{?dist}
+Release:	2%{?dist}
 
 Summary:	OMPI
 
@@ -17,6 +17,8 @@ BuildRequires: flex
 
 # to be able to generate configure if not present
 BuildRequires: autoconf, automake, libtool
+
+Obsoletes: openmpi
 
 %description
 OMPI
@@ -48,10 +50,11 @@ make %{?_smp_mflags} V=1
 
 %install
 %make_install
-
+find %{?buildroot}%{_libdir} -name *.la -print0 | xargs -r0 rm -f
 
 %files
 %{_libdir}/*.so.*
+%{_libdir}/openmpi/*.so
 %{_bindir}/*
 %{_datadir}/openmpi/
 %{_sysconfdir}/*
@@ -61,13 +64,16 @@ make %{?_smp_mflags} V=1
 %files devel
 %{_includedir}
 %{_libdir}/*.so
-%{_libdir}/*.la
-%{_libdir}/openmpi/*.so
-%{_libdir}/openmpi/*.la
-%{_libdir}/pkgconfig
+%{_libdir}/pkgconfig/*
 %{_mandir}/man3/*
 %{_mandir}/man7/*
 
 %changelog
+* Mon Mar 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-2
+- Obsoletes openmpi
+- Don't package libtool .la files
+- Include %{_libdir}/openmpi/ in the main package
+- Only include the %{_libdir}/pkgconfig/* files in the devel package
+
 * Wed Mar 13 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-1
 - initial package
