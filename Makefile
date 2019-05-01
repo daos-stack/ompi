@@ -1,15 +1,19 @@
-NAME        := ompi
-VERSION     := 3.0.0rc4
-RELEASE     := 3
-DIST        := $(shell rpm --eval %{dist})
+NAME    := ompi
+SRC_EXT := gz
+SOURCE   = https://github.com/open-mpi/$(NAME)/archive/v$(VERSION).tar.$(SRC_EXT)
+
+DIST    := $(shell rpm --eval %{?dist})
+ifeq ($(DIST),)
+SED_EXPR := 1p
+else
+SED_EXPR := 1s/$(DIST)//p
+endif
+VERSION := $(shell rpm --specfile --qf '%{version}\n' $(NAME).spec | sed -n '1p')
+RELEASE := $(shell rpm --specfile --qf '%{release}\n' $(NAME).spec | sed -n '$(SED_EXPR)')
 SRPM        := _topdir/SRPMS/$(NAME)-$(VERSION)-$(RELEASE)$(DIST).src.rpm
-RPMS        := _topdir/RPMS/x86_64/$(NAME)-$(VERSION)-$(RELEASE)$(DIST).x86_64.rpm           \
-	       _topdir/RPMS/x86_64/$(NAME)-devel-$(VERSION)-$(RELEASE)$(DIST).x86_64.rpm     \
-	       _topdir/RPMS/x86_64/$(NAME)-debuginfo-$(VERSION)-$(RELEASE)$(DIST).x86_64.rpm
+RPMS    := $(addsuffix .rpm,$(addprefix _topdir/RPMS/x86_64/,$(shell rpm --specfile $(NAME).spec)))
 SPEC        := $(NAME).spec
-SRC_EXT     := gz
-SOURCE      := https://github.com/open-mpi/$(NAME)/archive/v$(VERSION).tar.$(SRC_EXT)
-SOURCES     := _topdir/SOURCES/$(NAME)-$(VERSION).tar.$(SRC_EXT)
+SOURCES := $(addprefix _topdir/SOURCES/,$(notdir $(SOURCE)) $(PATCHES))
 TARGETS      := $(RPMS) $(SRPM)
 
 all: $(TARGETS)
@@ -23,7 +27,9 @@ _topdir/SOURCES/%: % | _topdir/SOURCES/
 
 $(NAME)-$(VERSION).tar.$(SRC_EXT):
 	curl -f -L -O '$(SOURCE)'
-	mv v$(VERSION).tar.$(SRC_EXT) $@
+
+v$(VERSION).tar.$(SRC_EXT):
+	curl -f -L -O '$(SOURCE)'
 
 # see https://stackoverflow.com/questions/2973445/ for why we subst
 # the "rpm" for "%" to effectively turn this into a multiple matching
@@ -49,4 +55,19 @@ mockbuild: $(SRPM) Makefile
 rpmlint: $(SPEC)
 	rpmlint $<
 
-.PHONY: srpm rpms ls mockbuild rpmlint FORCE
+show_version:
+	@echo $(VERSION)
+
+show_release:
+	@echo $(RELEASE)
+
+show_rpms:
+	@echo $(RPMS)
+
+show_source:
+	@echo $(SOURCE)
+
+show_sources:
+	@echo $(SOURCES)
+
+.PHONY: srpm rpms ls mockbuild rpmlint FORCE show_version show_release show_rpms show_source show_sources
