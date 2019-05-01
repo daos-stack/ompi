@@ -13,7 +13,6 @@ Source0:        https://www.github.com/open-mpi/%{name}/archive/v%{version}.tar.
 BuildRequires: hwloc-devel
 BuildRequires: pmix-devel >= 2.1.1
 BuildRequires: libevent-devel
-BuildRequires: perl-Data-Dumper
 BuildRequires: flex
 
 # to be able to generate configure if not present
@@ -74,6 +73,7 @@ find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 - Change source to more stable "archive" URL
 - Only include files under include/ in -devel
 - Remove all .la files
+- Remove perl-Data-Dumper BuildRequires
 
 * Mon Mar 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-3
 - Add a required verison of >= 2.1.1 for pmix-devel to make sure
