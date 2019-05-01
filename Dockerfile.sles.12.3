@@ -40,3 +40,10 @@ RUN zypper --non-interactive --no-gpg-check install openpa-devel      \
                                                     cmake boost-devel
 # pmix
 RUN zypper --non-interactive install libevent-devel
+
+# ompi
+RUN zypper --non-interactive ar -f https://download.opensuse.org/repositories/science:/HPC:/SLE12SP3_Missing/SLE_12_SP3/ hwloc;                                                   \
+    zypper --non-interactive --gpg-auto-import-keys ref hwloc;                                                                                                                    \
+    zypper --non-interactive ar --gpgcheck-allow-unsigned -f https://build.hpdd.intel.com/job/daos-stack/job/pmix/job/PR-4/lastSuccessfulBuild/artifact/artifacts/sles12.3/ pmix; \
+    zypper --non-interactive ref pmix
+RUN zypper --non-interactive install hwloc-devel pmix-devel flex
