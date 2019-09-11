@@ -1,30 +1,41 @@
 Name:		ompi
 Version:	3.0.0rc4
-Release:	4%{?dist}
+Release:	6%{?dist}
 
 Summary:	OMPI
 
 Group:		Development/Libraries
 License:	FOSS
-URL:		http://ompi-hpc.github.io/documentation/
-Source0:        https://www.github.com/open-mpi/%{name}/archive/v%{version}.tar.gz
+URL:		https://github.com/open-mpi/ompi
+Source0:	https://www.github.com/open-mpi/%{name}/archive/v%{version}.tar.gz
 
 
 BuildRequires: hwloc-devel
 BuildRequires: pmix-devel >= 2.1.1
 BuildRequires: libevent-devel
 BuildRequires: flex
+BuildRequires: gcc-c++
+%if 0%{?suse_version} > 1310
+BuildRequires: gcc-fortran
+Obsoletes: openmpi3 < %{version}-%{release}
+Obsoletes: openmpi3-libs < %{version}-%{release}
+%else
+BuildRequires: gcc-gfortran
+Obsoletes: openmpi < %{version}-%{release}
+Obsoletes: openmpi-libs < %{version}-%{release}
+%endif
+BuildRequires: pkgconfig
 
 # to be able to generate configure if not present
 BuildRequires: autoconf, automake, libtool
 
-Obsoletes: openmpi
 
 %description
 OMPI
 
 %package devel
 Summary:	OMPI devel package
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 OMPI devel
@@ -52,9 +63,12 @@ make %{?_smp_mflags} V=1
 %make_install
 find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
+
 %files
 %{_libdir}/*.so.*
-%{_libdir}/openmpi/*.so
+%{_libdir}/openmpi
 %{_bindir}/*
 %{_datadir}/openmpi/
 %{_sysconfdir}/*
@@ -69,6 +83,13 @@ find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 %{_mandir}/man7/*
 
 %changelog
+* Thu Sep 19 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-6
+- devel subpackage needs to require the library subpackage
+
+* Wed Sep 11 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-5
+- Obsoletes openmpi-libs for SLES 12.3
+- Add BR: gcc-c++, gcc-fortran
+
 * Wed May 01 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-4
 - Change source to more stable "archive" URL
 - Only include files under include/ in -devel
