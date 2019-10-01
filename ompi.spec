@@ -1,6 +1,6 @@
 Name:		ompi
 Version:	3.0.0rc4
-Release:	6%{?dist}
+Release:	7%{?dist}
 
 Summary:	OMPI
 
@@ -83,6 +83,10 @@ find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 %{_mandir}/man7/*
 
 %changelog
+* Tue Oct 01 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-7
+- Rebuild due to SUSE removing previous libhwloc5 RPM when
+  updating to a newer hwloc
+
 * Thu Sep 19 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-6
 - devel subpackage needs to require the library subpackage
 
