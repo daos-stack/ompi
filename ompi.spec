@@ -10,7 +10,7 @@ URL:		https://github.com/open-mpi/ompi
 Source0:	https://www.github.com/open-mpi/%{name}/archive/v%{version}.tar.gz
 
 
-BuildRequires: hwloc-devel
+BuildRequires: hwloc-devel < 2.0.0
 BuildRequires: pmix-devel >= 2.1.1
 BuildRequires: libevent-devel
 BuildRequires: flex
@@ -83,9 +83,10 @@ find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 %{_mandir}/man7/*
 
 %changelog
-* Tue Oct 01 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-7
+* Fri Oct 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-7
 - Rebuild due to SUSE removing previous libhwloc5 RPM when
   updating to a newer hwloc
+- Contrain hwloc-devel < 2.0.0 as OMPI doesn't support hwloc2
 
 * Thu Sep 19 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-6
 - devel subpackage needs to require the library subpackage
