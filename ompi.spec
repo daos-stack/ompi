@@ -1,6 +1,6 @@
 Name:		ompi
 Version:	3.0.0rc4
-Release:	7%{?dist}
+Release:	8%{?dist}
 
 Summary:	OMPI
 
@@ -25,6 +25,7 @@ Obsoletes: openmpi < %{version}-%{release}
 Obsoletes: openmpi-libs < %{version}-%{release}
 %endif
 BuildRequires: pkgconfig
+BuildRequires: libpsm2-devel >= 11.2.78
 
 # to be able to generate configure if not present
 BuildRequires: autoconf, automake, libtool
@@ -36,6 +37,7 @@ OMPI
 %package devel
 Summary:	OMPI devel package
 Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: libpsm2-devel >= 11.2.78
 
 %description devel
 OMPI devel
@@ -83,6 +85,9 @@ find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 %{_mandir}/man7/*
 
 %changelog
+* Tue Oct 29 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-8
+- Build with PSM2
+
 * Fri Oct 18 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-7
 - Rebuild due to SUSE removing previous libhwloc5 RPM when
   updating to a newer hwloc
