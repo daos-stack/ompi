@@ -1,13 +1,21 @@
-Name:		ompi
-Version:	3.0.0rc4
-Release:	8%{?dist}
+%global macrosdir %(d=%{_rpmconfigdir}/macros.d; [ -d $d ] || d=%{_sysconfdir}/rpm; echo $d)
 
-Summary:	OMPI
+%global variant openmpi3
+%global libname %{variant}
+%global namearch %{variant}-%{_arch}
 
-Group:		Development/Libraries
-License:	FOSS
-URL:		https://github.com/open-mpi/ompi
-Source0:	https://www.github.com/open-mpi/%{name}/archive/v%{version}.tar.gz
+Name:    ompi
+Version: 3.0.0rc4
+Release: 9%{?dist}
+
+Summary: OMPI
+
+Group:	 Development/Libraries
+License: FOSS
+URL:	 https://github.com/open-mpi/ompi
+Source0: https://www.github.com/open-mpi/%{name}/archive/v%{version}.tar.gz
+Source301: openmpi3.module.in
+Source302: macros.openmpi3
 
 
 BuildRequires: hwloc-devel < 2.0.0
@@ -51,40 +59,124 @@ if [ ! -f configure ]; then
     # convert some /usr/lib searches to /usr/lib64
     sed -i -e 's/lib\(\/libpmix\.\*\)/lib64\1/' configure
 fi
-%configure --with-platform=optimized           \
-            --enable-orterun-prefix-by-default \
-            --disable-mpi-fortran              \
-            --enable-contrib-no-build=vt       \
-            --with-libevent=external           \
-            --with-pmix=/usr                   \
+./configure --build=x86_64-redhat-linux-gnu --host=x86_64-redhat-linux-gnu \
+	--program-prefix= \
+	--disable-dependency-tracking \
+            --prefix=%{_libdir}/%{libname}          \
+	--exec-prefix=/usr \
+	    --bindir=%{_libdir}/%{libname}/bin      \
+	    --sbindir=%{_libdir}/%{libname}/sbin    \
+	    --sysconfdir=%{_sysconfdir}/%{namearch} \
+	    --datadir=%{_libdir}/%{libname}/share   \
+	    --includedir=%{_includedir}/%{namearch} \
+	    --libdir=%{_libdir}/%{libname}/lib      \
+	--libexecdir=/usr/libexec \
+	--localstatedir=/var \
+	--sharedstatedir=/var/lib \
+	    --mandir=%{_mandir}/%{namearch}         \
+	--infodir=/usr/share/info                   \
+            --with-platform=optimized               \
+            --enable-orterun-prefix-by-default      \
+            --disable-mpi-fortran                   \
+            --enable-contrib-no-build=vt            \
+            --with-libevent=external                \
+            --with-pmix=/usr                        \
             --with-hwloc=/usr
 
-make %{?_smp_mflags} V=1
+make %{?_smp_mflags}
 
 %install
 %make_install
 find %{?buildroot} -name *.la -print0 | xargs -r0 rm -f
 
+
+# Make the environment-modules file
+mkdir -p %{buildroot}%{_sysconfdir}/modulefiles/mpi
+# Since we're doing our own substitution here, use our own definitions.
+sed 's#@LIBDIR@#%{_libdir}/%{libname}#;
+     s#@ETCDIR@#%{_sysconfdir}/%{namearch}#;
+     s#@FMODDIR@#%{_fmoddir}/%{libname}#;
+     s#@INCDIR@#%{_includedir}/%{namearch}#;
+     s#@MANDIR@#%{_mandir}/%{namearch}#;
+     s#@PY2SITEARCH@#%{python_sitearch}/%{libname}#;
+     s#@COMPILER@#%{variant}-'%{_arch}%{?_cc_name_suffix}'#g;
+     s#@SUFFIX@#'%{?_cc_name_suffix}'_%{variant}#g' \
+     <%{SOURCE301} \
+     >%{buildroot}%{_sysconfdir}/modulefiles/mpi/%{namearch}
+
+# make the rpm config file
+install -Dpm 644 %{SOURCE302} %{buildroot}/%{macrosdir}/macros.%{namearch}
+
+# Link the fortran module to proper location
+mkdir -p %{buildroot}%{_fmoddir}/%{libname}
+for mod in %{buildroot}%{_libdir}/%{libname}/lib/*.mod
+do
+  modname=$(basename $mod)
+  ln -s ../../../%{libname}/lib/${modname} %{buildroot}/%{_fmoddir}/%{libname}/
+done
+
+mkdir -p %{buildroot}/%{python_sitearch}/%{libname}
+
+# Link the pkgconfig files into the main namespace as well
+mkdir -p %{buildroot}%{_libdir}/pkgconfig
+cd %{buildroot}%{_libdir}/pkgconfig
+ln -s ../%{libname}/lib/pkgconfig/*.pc .
+cd -
+
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 
 %files
-%{_libdir}/*.so.*
-%{_libdir}/openmpi
-%{_bindir}/*
-%{_datadir}/openmpi/
-%{_sysconfdir}/*
-%{_mandir}/man1/*
-%doc
+%dir %{_libdir}/%{libname}
+%dir %{_sysconfdir}/%{namearch}
+%dir %{_libdir}/%{libname}/bin
+%dir %{_libdir}/%{libname}/lib
+%dir %{_libdir}/%{libname}/lib/openmpi
+%dir %{_mandir}/%{namearch}
+%dir %{_mandir}/%{namearch}/man*
+%dir %{_fmoddir}/%{libname}
+%dir %{_sysconfdir}/modulefiles/mpi
+%dir %{python_sitearch}/%{libname}
+%config(noreplace) %{_sysconfdir}/%{namearch}/*
+%{_libdir}/%{libname}/bin/mpi[er]*
+%{_libdir}/%{libname}/bin/ompi*
+%{_libdir}/%{libname}/bin/orte[-dr_]*
+%{_libdir}/%{libname}/lib/*.so.*
+%{_mandir}/%{namearch}/man1/mpi[er]*
+%{_mandir}/%{namearch}/man1/ompi*
+%{_mandir}/%{namearch}/man1/orte[-dr_]*
+%{_mandir}/%{namearch}/man7/orte*
+%{_mandir}/%{namearch}/man7/ompi*
+%{_mandir}/%{namearch}/man7/opal*
+%{_libdir}/%{libname}/lib/openmpi/*
+%{_sysconfdir}/modulefiles/mpi/%{namearch}
+%dir %{_libdir}/%{libname}/share
+%dir %{_libdir}/%{libname}/share/openmpi
+%{_libdir}/%{libname}/share/openmpi/amca-param-sets
+%{_libdir}/%{libname}/share/openmpi/help*.txt
+%{_libdir}/%{libname}/share/openmpi/mca-btl-openib-device-params.ini
 
 %files devel
-%{_includedir}/*
-%{_libdir}/*.so
-%{_libdir}/pkgconfig/*
-%{_mandir}/man3/*
-%{_mandir}/man7/*
+%dir %{_includedir}/%{namearch}
+%{_libdir}/%{libname}/bin/mpi[cCf]*
+%{_libdir}/%{libname}/bin/opal_*
+%{_libdir}/%{libname}/bin/orte[cCf]*
+%{_includedir}/%{namearch}/*
+%{_fmoddir}/%{libname}/
+%{_libdir}/%{libname}/lib/*.so
+%{_libdir}/%{libname}/lib/pkgconfig/
+%{_libdir}/pkgconfig/*.pc
+%{_mandir}/%{namearch}/man1/mpi[cCf]*
+%{_mandir}/%{namearch}/man1/opal_*
+%{_mandir}/%{namearch}/man3/*
+%{_libdir}/%{libname}/share/openmpi/openmpi-valgrind.supp
+%{_libdir}/%{libname}/share/openmpi/*-wrapper-data.txt
+%{macrosdir}/macros.%{namearch}
 
 %changelog
+* Sat Nov 09 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-9
+- Install into /usr/lib64/openmpi/
+
 * Tue Oct 29 2019 Brian J. Murrell <brian.murrell@intel> - 3.0.0rc4-8
 - Build with PSM2
 
